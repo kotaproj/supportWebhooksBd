@@ -1,0 +1,1 @@
+{"token": "token", "ssid": "ssid", "password": "pass", "btn1_evt": "esp_evt1", "btn2_evt": "esp_evt2", "btn3_evt": "esp_evt3", "btn4_evt": "esp_evt4", "btn5_evt": "esp_evt5", "btn6_evt": "esp_evt6", "btn7_evt": "esp_evt7", "btn8_evt": "esp_evt8", "btn9_evt": "esp_evt9"}

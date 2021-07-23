@@ -92,7 +92,7 @@ class DspProc():
         if 'dsp' in d['cmd']:
             self._act_cmd_dsp(d['type'])
 
-        if 're' in d['type']:
+        if 're' == d['type']:
             self._act_cmd_dsp_re(d['type'], d['pos'])
 
         if True == ('tmr' in d):
@@ -123,8 +123,7 @@ class DspProc():
             if key in code:
                 self._oled.fill(0)
                 self._oled.text('<IFTTT Request>', 0, 0)
-                # message = '->' +  self._settings_file.get_param(parse_code[key])
-                self._oled.text(('->' +  self._settings_file.get_param(parse_code[key])), 0, 10)
+                self._oled.text(('->' +  str(key)), 0, 10)
                 if "sending" in code:
                     self._oled.text('Sending...', 0, 20)
                 if "sended" in code:

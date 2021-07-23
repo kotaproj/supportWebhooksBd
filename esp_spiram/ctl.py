@@ -28,7 +28,7 @@ class CtlProc():
             return False
 
         if 'sw' in d['cmd']:
-            self._act_cmd_sw(d['type'])
+            self._act_cmd_sw(d['type'], d['how'])
             return True
         
         if 're' in d['cmd']:
@@ -39,13 +39,13 @@ class CtlProc():
         return False
 
 
-    def _act_cmd_sw(self, code):
+    def _act_cmd_sw(self, code, how):
         # print('_act_cmd_sw - run')
         # create - ['no1', 'no2', ..., 'no10']
         parse_no = ["no" + str(x) for x in range(1, 11, 1)] 
         for no in parse_no:
             if no in code:
-                self._cs_httpc.sendto_dict({'cmd': "httpc", 'type':no})
+                self._cs_httpc.sendto_dict({'cmd': "httpc", 'type':no, 'how':how})
                 break
         # print('_act_cmd_sw - over')
         return

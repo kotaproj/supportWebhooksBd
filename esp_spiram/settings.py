@@ -15,15 +15,6 @@ INIT_SET_DATA = {
     "ssid" : "ssid",
     "password" : "password",
     "token" : "token",
-    "btn1_evt" : "esp_evt1",
-    "btn2_evt" : "esp_evt2",
-    "btn3_evt" : "esp_evt3",
-    "btn4_evt" : "esp_evt4",
-    "btn5_evt" : "esp_evt5",
-    "btn6_evt" : "esp_evt6",
-    "btn7_evt" : "esp_evt7",
-    "btn8_evt" : "esp_evt8",
-    "btn9_evt" : "esp_evt9",
 }
 
 
@@ -55,20 +46,6 @@ class SettingsFile:
 
     def read(self):
         print('read - run')
-
-        # print('read - r1')
-        # f = io.open(SETTINGS_TXT, "r")
-        # print('read - r2')
-        # f.seek(0)
-        # print(f.read())
-        # f.seek(0)
-        # print(json.loads( f.read() ))
-        # print('read - r3')
-        # # set_data = json.loads( f.read().replace("\'", "\"") )
-        # f.seek(0)
-        # self._set_data = json.loads( f.read() )
-        # print('read - r4')
-
 
         try:
             print('read - r1')

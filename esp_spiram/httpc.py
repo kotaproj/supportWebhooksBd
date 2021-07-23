@@ -12,9 +12,7 @@ from util import ADDR
 from util import PORT_DST_HTTPC
 from util import PORT_DST_DSP
 from led import LedProc
-
-# debug
-# from machine import RTC
+from ifttt_evt import KEY_TO_EVENTID
 
 RCV_BUF_SIZE = 64
 
@@ -61,29 +59,21 @@ class HttpcProc():
             return False
 
         if 'httpc' in d['cmd']:
-            self._act_cmd_sw(d['type'])
+            self._act_cmd_sw(d['type'], d['how'])
             return True
         
         print('_act_cmd - over')
         return False
 
 
-    def _act_cmd_sw(self, code):
-        # create
-        # {
-        #     "no1" : "btn1_evt",
-        #     "no2" : "btn2_evt",
-        #     ...
-        #     "no10" : "btn10_evt",
-        # }
-        parse_code = {"no"+str(x) : "btn"+str(x)+"_evt" for x in range(1, 11, 1)}
-
-        for key in parse_code.keys():
-            if key in code:
-                self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':(code + "sending"), 'tmr':'3000'})
-                self._do_webhook(self._settings_file.get_param(parse_code[key]))
-                self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':(code + "sended"), 'tmr':'3000'})
-                break
+    def _act_cmd_sw(self, code, how):
+        if code in KEY_TO_EVENTID:
+            evt_id = KEY_TO_EVENTID[code][how]
+            if evt_id is not None:
+                self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':(code + ":" + how + "..."), 'tmr':'3000'})
+                self._do_webhook(evt_id)
+                self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':(code + ":" + how + "!!!"), 'tmr':'3000'})
+        return
 
 
     def _do_webhook(self, eventid, value1="dummy1", value2="dummy2", value3="dummy3"):

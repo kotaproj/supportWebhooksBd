@@ -1,7 +1,13 @@
 from machine import Pin
 
-TACK_JUDGE = [False, False, True, True]
-# TACK_JUDGE = [False, False, False, False]
+# 100msec
+TACT_JUDGE_PRESS = [False, False, True, True]
+# 1sec
+TACT_JUDGE_LONG = [False, False, 
+                   True, True, True, True, True, True, True, True,
+                   True, True, True, True, True, True, True, True]
+# released
+TACT_JUDGE_RELEASE = [True, True, False, False]
 
 class TackSwitch:
     def __init__(self, pin, mode, push_logic):
@@ -14,6 +20,7 @@ class TackSwitch:
             raise Exception('')
 
         self.store = []
+        self.long_store = []
         self.push_logic = push_logic
 
 
@@ -28,15 +35,28 @@ class TackSwitch:
 
     def read_poll(self):
         logic = self.read()
+
+        # 短押し
         self.store.append(logic)
-        if len(self.store) < 5:
-            return False
+        if len(self.store) <= len(TACT_JUDGE_PRESS):
+            return False, None
 
         self.store.pop(0)
-        if TACK_JUDGE == self.store:
-            return True
-        
-        return False
+        if TACT_JUDGE_PRESS == self.store:
+            return True, "pressed"
+
+        if TACT_JUDGE_RELEASE == self.store:
+            return True, "relesed"
+
+        # 長押し
+        self.long_store.append(logic)
+        if len(self.long_store) <= len(TACT_JUDGE_LONG):
+            return False, None
+        self.long_store.pop(0)
+        if TACT_JUDGE_LONG == self.long_store:
+            return True, "long"
+
+        return False, None
 
 
 try:

@@ -47,46 +47,65 @@ class SwProc():
         print("_proc_poll - run")
         while True:
             time.sleep_ms(50)
-            if self._tsw_no1.read_poll() :
+            sw_evt, sw_how = self._tsw_no1.read_poll()
+            if sw_evt :
                 self.debug_SW_NO1_count += 1
-                print("sw_no1")
-                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no1'})
-            if self._tsw_no2.read_poll() :
+                print("sw_no1 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no1', 'how':sw_how})
+
+            sw_evt, sw_how = self._tsw_no2.read_poll()
+            if sw_evt :
                 self.debug_SW_NO2_count += 1
-                print("sw_no2")
-                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no2'})
-            if self._tsw_no3.read_poll() :
+                print("sw_no2 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no2', 'how':sw_how})
+
+            sw_evt, sw_how = self._tsw_no3.read_poll()
+            if sw_evt :
                 self.debug_SW_NO3_count += 1
-                print("sw_no3")
-                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no3'})
-            if self._tsw_no4.read_poll() :
+                print("sw_no3 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no3', 'how':sw_how})
+
+            sw_evt, sw_how = self._tsw_no4.read_poll()
+            if sw_evt :
                 self.debug_SW_NO4_count += 1
-                print("sw_no4")
-                # self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no4'})
-            if self._tsw_no5.read_poll() :
+                print("sw_no4 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no4', 'how':sw_how})
+
+            sw_evt, sw_how = self._tsw_no5.read_poll()
+            if sw_evt :
                 self.debug_SW_NO5_count += 1
-                print("sw_no5")
-                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no5'})
-            # # if self._tsw_no6.read_poll() :
-            # #     self.debug_SW_NO6_count += 1
-            # #     print("sw_no6")
-            # #     self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no6'})
-            if self._tsw_no7.read_poll() :
+                print("sw_no5 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no5', 'how':sw_how})
+
+            # sw_evt, sw_how = self._tsw_no6.read_poll()
+            # if sw_evt :
+            #     self.debug_SW_NO6_count += 1
+            #     print("sw_no6 : ", sw_how)
+            #     self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no6', 'how':sw_how})
+
+            sw_evt, sw_how = self._tsw_no7.read_poll()
+            if sw_evt :
                 self.debug_SW_NO7_count += 1
-                print("sw_no7")
-                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no7'})
-            if self._tsw_no8.read_poll() :
+                print("sw_no7 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no7', 'how':sw_how})
+
+            sw_evt, sw_how = self._tsw_no8.read_poll()
+            if sw_evt :
                 self.debug_SW_NO8_count += 1
-                print("sw_no8")
-                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no8'})
-            if self._tsw_no9.read_poll() :
+                print("sw_no8 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no8', 'how':sw_how})
+
+            sw_evt, sw_how = self._tsw_no9.read_poll()
+            if sw_evt :
                 self.debug_SW_NO9_count += 1
-                print("sw_no9")
-                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no9'})
-            # if self._tsw_no10.read_poll() :
+                print("sw_no9 : ", sw_how)
+                self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no9', 'how':sw_how})
+
+            # sw_evt, sw_how = self._tsw_no10.read_poll()
+            # if sw_evt :
             #     self.debug_SW_NO10_count += 1
-            #     print("sw_no10")
-            #     self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no10'})
+            #     print("sw_no10 : ", sw_how)
+            #     self._cs_ctl.sendto_dict({'cmd': "sw", 'type':'no10', 'how':sw_how})
 
 
     def run(self):

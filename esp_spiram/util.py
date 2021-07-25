@@ -22,6 +22,7 @@ class TackSwitch:
         self.store = []
         self.long_store = []
         self.push_logic = push_logic
+        self.long_evt = False
 
 
     def read(self):
@@ -46,6 +47,9 @@ class TackSwitch:
             return True, "pressed"
 
         if TACT_JUDGE_RELEASE == self.store:
+            if self.long_evt:
+                self.long_evt = False
+                return False, None
             return True, "relesed"
 
         # 長押し
@@ -54,6 +58,7 @@ class TackSwitch:
             return False, None
         self.long_store.pop(0)
         if TACT_JUDGE_LONG == self.long_store:
+            self.long_evt = True
             return True, "long"
 
         return False, None

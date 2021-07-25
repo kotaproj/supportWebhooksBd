@@ -1,17 +1,17 @@
 KEY_TO_EVENTID = {
     "no1" : {
-        "pressed" : "whb_air_cold",
-        "relesed" : None,
+        "pressed" : None,
+        "relesed" : "whb_air_cold",
         "long" : "whb_air_off",
     },
     "no2" : {
-        "pressed" : "whb_tv_pwr",
-        "relesed" : None,
+        "pressed" : None,
+        "relesed" : "whb_tv_pwr",
         "long" : None,
     },
     "no3" : {
-        "pressed" : "whb_fan_pwr",
-        "relesed" : None,
+        "pressed" : None,
+        "relesed" : "whb_fan_pwr",
         "long" : None,
     },
     "no4" : {
@@ -30,18 +30,18 @@ KEY_TO_EVENTID = {
         "long" : None,
     },
     "no7" : {
-        "pressed" : "meross_speaker_poweroff",
-        "relesed" : None,
+        "pressed" : None,
+        "relesed" : "meross_speaker_poweroff",
         "long" : "meross_speaker_poweron",
     },
     "no8" : {
-        "pressed" : "smartlife_2_poweroff",
-        "relesed" : None,
+        "pressed" : None,
+        "relesed" : "smartlife_2_poweroff",
         "long" : "smartlife_2_poweron",
     },
     "no9" : {
-        "pressed" : "whb_fan_flow",
-        "relesed" : None,
+        "pressed" : None,
+        "relesed" : "whb_fan_flow",
         "long" : "whb_fan_swing",
     },
     "no10" : {

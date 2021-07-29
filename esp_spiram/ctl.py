@@ -35,6 +35,10 @@ class CtlProc():
             self._act_cmd_re(d['type'], d['pos'])
             return True
         
+        if 'dsp' in d['cmd']:
+            self._act_cmd_dsp(d['type'], d['tmr'])
+            return True
+        
         # print('_act_cmd - over')
         return False
 
@@ -55,6 +59,12 @@ class CtlProc():
         # print('_act_cmd_re - run')
         self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':'re', 'pos':pos, 'tmr':'3000'})
         # print('_act_cmd_re - over')
+        return
+
+    def _act_cmd_dsp(self, typ, tmr):
+        # print('_act_cmd_dsp - run')
+        self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':typ, 'tmr':tmr})
+        # print('_act_cmd_dsp - over')
         return
 
 

@@ -10,7 +10,7 @@ from util import CommSnd
 from util import HOST
 from util import ADDR
 from util import PORT_DST_HTTPC
-from util import PORT_DST_DSP
+from util import PORT_DST_CTL
 from led import LedProc
 from ifttt_evt import KEY_TO_EVENTID
 
@@ -21,7 +21,7 @@ class HttpcProc():
     def __init__(self, ssid, password):
         self._ssid = ssid
         self._password = password
-        self._cs_dsp = CommSnd(ADDR, PORT_DST_DSP)
+        self._cs_ctl = CommSnd(ADDR, PORT_DST_CTL)
         self._settings_file = SettingsFile()
         # self._rtc = RTC()
         # self._rtc.datetime((2020, 2, 23, 11, 45, 0, 0, 0))
@@ -70,9 +70,9 @@ class HttpcProc():
         if code in KEY_TO_EVENTID:
             evt_id = KEY_TO_EVENTID[code][how]
             if evt_id is not None:
-                self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':(code + ":" + how + "..."), 'tmr':'3000'})
+                self._cs_ctl.sendto_dict({'cmd': "dsp", 'type':(code + ":" + how + "..."), 'tmr':'3000'})
                 self._do_webhook(evt_id)
-                self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':(code + ":" + how + "!!!"), 'tmr':'3000'})
+                self._cs_ctl.sendto_dict({'cmd': "dsp", 'type':(code + ":" + how + "!!!"), 'tmr':'3000'})
         return
 
 

@@ -16,3 +16,17 @@ def conv_typ2eventid(typ, how):
 
 def str2bool(s):
     return s.lower() in ["true", "t", "yes", "1"]
+
+
+def send_que(que, value, lock=None):
+    if que is None:
+        return
+    que.append(value)
+    return
+
+def recv_que(que, lock=None):
+    val = None
+    if len(que) > 0:
+        val = que[0]
+        del que[0]
+    return val

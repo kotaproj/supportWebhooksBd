@@ -1,8 +1,6 @@
 import uasyncio as asyncio
-import uheapq as heapq
 
-from util import conv_msg2dict
-from util import str2bool
+from util import *
 
 from machine import Pin
 
@@ -108,9 +106,8 @@ async def proc_led(snd_q=None, rcv_q=None):
 
     while True:
         # recvive_que
-        try:
-            msg = heapq.heappop(rcv_q)
-        except IndexError:
+        msg = recv_que(rcv_q)
+        if msg is None:
             # print("IndexError")
             # LED Blink
             blink_status = False if blink_status else True
@@ -128,11 +125,12 @@ async def debug_main():
     que_pre2led = []
     asyncio.create_task(proc_led(snd_q=None, rcv_q=que_pre2led))
     await asyncio.sleep_ms(1_000)
-    heapq.heappush(que_pre2led, ("dst:led,src:pre,cmd:led,type:off_all"))
+    # send_que(que_pre2led, )
+    send_que(que_pre2led, ("dst:led,src:pre,cmd:led,type:off_all"))
     await asyncio.sleep_ms(1_000)
-    heapq.heappush(que_pre2led, ("dst:led,src:pre,cmd:led,type:on_all"))
+    send_que(que_pre2led, ("dst:led,src:pre,cmd:led,type:on_all"))
     await asyncio.sleep_ms(1_000)
-    heapq.heappush(que_pre2led, ("dst:led,src:pre,cmd:led,type:blink"))
+    send_que(que_pre2led, ("dst:led,src:pre,cmd:led,type:blink"))
     await asyncio.sleep_ms(10_000)
     return
 

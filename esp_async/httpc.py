@@ -1,14 +1,11 @@
 import uasyncio as asyncio
-import uheapq as heapq
 import network
 import urequests as requests
 import gc
 from machine import Pin
 
 from settings import SettingsFile
-from util import conv_msg2dict
-from util import conv_typ2eventid
-from util import str2bool
+from util import *
 
 # variable
 is_sub_proc_running = False
@@ -46,11 +43,11 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
         while not wlan.isconnected():
             await asyncio.sleep_ms(3_000)
             print(".")
-    
-    heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:dsp,type:clear"))
-    heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:led,type:off_all"))
+
+    send_que(snd_q, ("dst:pre,src:httpc,cmd:dsp,type:clear"))
+    send_que(snd_q, ("dst:pre,src:httpc,cmd:led,type:off_all"))
     print('network config:', wlan.ifconfig())
-    heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:green"))
+    send_que(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:green"))
 
     def act_httpc(msg):
 
@@ -73,7 +70,7 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
             # value指定が不要な場合は↓でok
             # response = requests.post(url)
             # self._led_proc.blink_led("blue")
-            heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:blue"))
+            send_que(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:blue"))
             response.close()
             return
 
@@ -87,9 +84,9 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
             evt_id = conv_typ2eventid(typ, how)
             print(evt_id)
             if evt_id is not None:
-                heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:dsp,type:ifttt,how:"+evt_id+",sts:sending...,tmr:3000"))
+                send_que(snd_q, ("dst:pre,src:httpc,cmd:dsp,type:ifttt,how:"+evt_id+",sts:sending...,tmr:3000"))
                 do_webhook(evt_id)
-                heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:dsp,type:ifttt,how:"+evt_id+",sts:sended.,tmr:3000"))
+                send_que(snd_q, ("dst:pre,src:httpc,cmd:dsp,type:ifttt,how:"+evt_id+",sts:sended.,tmr:3000"))
         else:
             print("act_httpc:error, ", msg)
         return
@@ -97,9 +94,8 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
     # polling
     while True:
         # recvive_que
-        try:
-            msg = heapq.heappop(rcv_q)
-        except IndexError:
+        msg = recv_que(rcv_q)
+        if msg is None:
             if not wlan.isconnected():
                 # reconnect
                 break
@@ -117,9 +113,9 @@ async def debug_main():
     que_pre2httpc = []
     asyncio.create_task(proc_httpc(snd_q=None, rcv_q=que_pre2httpc))
     await asyncio.sleep_ms(5_000)
-    heapq.heappush(que_pre2httpc, ("dst:httpc,src:pre,cmd:sw,type:no3,how:released"))
+    send_que(que_pre2httpc, ("dst:httpc,src:pre,cmd:sw,type:no3,how:released"))
     await asyncio.sleep_ms(5_000)
-    heapq.heappush(que_pre2httpc, ("dst:httpc,src:pre,cmd:sw,type:no3,how:released"))
+    send_que(que_pre2httpc, ("dst:httpc,src:pre,cmd:sw,type:no3,how:released"))
     await asyncio.sleep_ms(10_000)
     return
 

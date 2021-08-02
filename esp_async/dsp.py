@@ -1,10 +1,8 @@
 import uasyncio as asyncio
-import uheapq as heapq
 import machine
 import ssd1306
 
-from util import conv_msg2dict
-from util import str2bool
+from util import *
 from settings import SettingsFile
 
 # Defines
@@ -134,9 +132,8 @@ async def proc_dsp(snd_q=None, rcv_q=None):
 
     while True:
         # recvive_que
-        try:
-            msg = heapq.heappop(rcv_q)
-        except IndexError:
+        msg = recv_que(rcv_q)
+        if msg is None:
             # print("IndexError")
             await asyncio.sleep_ms(50)
             continue
@@ -154,15 +151,15 @@ async def debug_main():
     que_pre2dsp = []
     asyncio.create_task(proc_dsp(snd_q=None, rcv_q=que_pre2dsp))
     await asyncio.sleep_ms(1_000)
-    heapq.heappush(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sending...,tmr:3000"))
+    send_que(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sending...,tmr:3000"))
     await asyncio.sleep_ms(1_000)
-    heapq.heappush(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sended.,tmr:3000"))
+    send_que(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sended.,tmr:3000"))
     await asyncio.sleep_ms(3_000)
-    heapq.heappush(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:server,tmr:3000"))
+    send_que(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:server,tmr:3000"))
     await asyncio.sleep_ms(3_000)
-    heapq.heappush(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:client,tmr:3000"))
+    send_que(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:client,tmr:3000"))
     await asyncio.sleep_ms(3_000)
-    heapq.heappush(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:done,tmr:3000"))
+    send_que(que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:done,tmr:3000"))
     await asyncio.sleep_ms(10_000)
     print("debug - done!")
     await asyncio.sleep_ms(1_000)

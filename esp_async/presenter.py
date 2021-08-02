@@ -1,7 +1,6 @@
 import uasyncio as asyncio
-import uheapq as heapq
 
-from util import conv_msg2dict
+from util import *
 
 async def proc_presenter(snd_ques=None, rcv_ques=None):
 
@@ -11,29 +10,28 @@ async def proc_presenter(snd_ques=None, rcv_ques=None):
         print("pre_command_sw:run")
         d = conv_msg2dict(msg)
         print(d)
-        heapq.heappush(snd_ques["httpc"], ("dst:httpc,src:pre,cmd:sw,type:"+d["type"]+",how:"+d["how"]))
+        send_que(snd_ques["httpc"], ("dst:httpc,src:pre,cmd:sw,type:"+d["type"]+",how:"+d["how"]))
         return
 
     def command_dsp(msg):
         print("pre_command_dsp:run")
         msg = msg.replace("dst:pre,src:httpc,", "dst:dsp,src:pre,")
-        heapq.heappush(snd_ques["dsp"], msg)
+        send_que(snd_ques["dsp"], msg)
         print("pre_command_dsp:over")
         return
 
     def command_led(msg):
         print("pre_command_led:run")
         msg = msg.replace("dst:pre,src:httpc,", "dst:led,src:pre,")
-        heapq.heappush(snd_ques["led"], msg)
+        send_que(snd_ques["led"], msg)
         print("pre_command_led:over")
         return
 
     while True:
         # recvive_que
         for key, rcv_q in rcv_ques.items():
-            try:
-                msg = heapq.heappop(rcv_q)
-            except IndexError:
+            msg = recv_que(rcv_q)
+            if msg is None:
                 # print("IndexError")
                 continue
             print("proc_presenter:msg - ", msg)
@@ -48,9 +46,6 @@ async def proc_presenter(snd_ques=None, rcv_ques=None):
                 pass
             else:
                 print("proc_presenter:error - ", msg)
-
-            # moji = "pre_" + msg
-            # heapq.heappush(snd_ques["output"], moji)
         await asyncio.sleep_ms(10)
 
 

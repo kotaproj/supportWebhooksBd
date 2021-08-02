@@ -1,6 +1,6 @@
 import uasyncio as asyncio
-import uheapq as heapq
 from machine import Pin
+from util import send_que
 
 TACT_SW_DEFs = {
     "no1": (35, "in", 0),
@@ -85,13 +85,12 @@ async def proc_sw(snd_q=None, rcv_q=None):
 
     # polling
     while True:
-        await asyncio.sleep_ms(50)
+        await asyncio.sleep_ms(10)
         for key, tact_sw in tsws.items():
             sw_evt, sw_how = tact_sw.read_poll()
             if sw_evt:
                 print("sw", key, ":", sw_how)
-                if snd_q is not None:
-                    heapq.heappush(snd_q, ("dst:pre,src:sw,cmd:sw" + ",type:" + str(key) + ",how:" + sw_how))
+                send_que(snd_q, ("dst:pre,src:sw,cmd:sw" + ",type:" + str(key) + ",how:" + sw_how))
     print("proc_sw:over")
     return
 

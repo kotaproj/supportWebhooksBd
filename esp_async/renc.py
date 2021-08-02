@@ -1,7 +1,6 @@
 import uasyncio as asyncio
-import uheapq as heapq
 from machine import Pin
-
+from util import *
 from rotary_enc import RotaryEnc
 
 
@@ -23,8 +22,7 @@ async def proc_renc(snd_q=None, rcv_q=None):
         position = re.get_positon()
         if position != prev_position :
             print("re", str(position - prev_position), str(position))
-            if snd_q is not None:
-                heapq.heappush(snd_q, ("dst:pre,src:renc,cmd:renc" + ",type:" + str(position) + ",chg_val:" + str(position - prev_position)))
+            send_que(snd_q, ("dst:pre,src:renc,cmd:renc" + ",type:" + str(position) + ",chg_val:" + str(position - prev_position)))
             prev_position = position
     print("proc_renc:over")
     return

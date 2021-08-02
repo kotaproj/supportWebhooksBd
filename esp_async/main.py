@@ -1,9 +1,9 @@
 import uasyncio as asyncio
 import time
 
+# system data
 from systems import SystemsData
 from settings import SettingsFile
-
 
 # control task
 from presenter import proc_presenter
@@ -41,9 +41,6 @@ def main():
         proc_server()
     else:
         asyncio.run(proc_client())
-
-    time.sleep(3)
-    oled_ctl.dsp_clear()
 
     while True:
         time.sleep(10)
@@ -100,6 +97,7 @@ async def proc_client():
 
 
 if __name__ == "__main__":
-    main()
+    # main()
+    pass
 
 

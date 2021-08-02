@@ -47,6 +47,7 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
             await asyncio.sleep_ms(3_000)
             print(".")
     
+    heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:dsp,type:clear"))
     heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:led,type:off_all"))
     print('network config:', wlan.ifconfig())
     heapq.heappush(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:green"))
@@ -102,7 +103,7 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
             if not wlan.isconnected():
                 # reconnect
                 break
-            await asyncio.sleep_ms(100)
+            await asyncio.sleep_ms(50)
             continue
 
         print("proc_httpc:msg - ", msg)

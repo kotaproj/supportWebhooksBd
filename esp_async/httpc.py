@@ -66,13 +66,18 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
 
             url = "http://maker.ifttt.com/trigger/" + eventid + "/with/key/" + token
 
-            response = requests.post(url, headers={"Content-Type": "application/x-www-form-urlencoded"}, data=payload)
-            # value指定が不要な場合は↓でok
-            # response = requests.post(url)
-            # self._led_proc.blink_led("blue")
-            send_que(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:blue"))
-            response.close()
-            return
+            ret = True
+            try:
+                response = requests.post(url, headers={"Content-Type": "application/x-www-form-urlencoded"}, data=payload)
+                # value指定が不要な場合は↓でok
+                # response = requests.post(url)
+                # self._led_proc.blink_led("blue")
+                send_que(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:blue"))
+                response.close()
+            except:
+                send_que(snd_q, ("dst:pre,src:httpc,cmd:led,type:blink,name:red"))
+                ret = False
+            return ret
 
         print("act_httpc:run")
         d = conv_msg2dict(msg)
@@ -103,7 +108,10 @@ async def subproc_httpc(snd_q=None, rcv_q=None):
             continue
 
         print("proc_httpc:msg - ", msg)
-        act_httpc(msg)
+        ret = act_httpc(msg)
+        if False == ret:
+            # reconnect
+            break
 
     is_sub_proc_running = False
 

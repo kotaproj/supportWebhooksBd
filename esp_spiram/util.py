@@ -1,103 +1,52 @@
-from machine import Pin
+from ifttt_evt import KEY_TO_EVENTID
 
-# 100msec
-TACT_JUDGE_PRESS = [False, False, True, True]
-# 1sec
-TACT_JUDGE_LONG = [False, False, 
-                   True, True, True, True, True, True, True, True,
-                   True, True, True, True, True, True, True, True]
-# released
-TACT_JUDGE_RELEASE = [True, True, False, False]
+def conv_msg2dict(msg):
+    # input : "a:b,c:d"
+    # output: {"a":"b","c":"d"}
+    d = {}
+    for item in msg.split(','):
+        key, val = item.split(':')
+        d[key] = val
+    return d
 
-class TackSwitch:
-    def __init__(self, pin, mode, push_logic):
-        if mode == "in":
-            self.pin = Pin(pin, Pin.IN)
-            pass
-        elif mode == "in_pullup":
-            self.pin = Pin(pin, Pin.IN, Pin.PULL_UP)
-        else:
-            raise Exception('')
+def conv_typ2eventid(typ, how):
+    if typ in KEY_TO_EVENTID:
+        return KEY_TO_EVENTID[typ][how]
+    return None
 
-        self.store = []
-        self.long_store = []
-        self.push_logic = push_logic
-        self.long_evt = False
+def str2bool(s):
+    return s.lower() in ["true", "t", "yes", "1"]
 
+def send_que(lock, que, value):
+    if que is None:
+        print("Error:que is None.")
+        return
 
-    def read(self):
-        value = self.pin.value()
-        # value = 1 # self.pin.value()
-        if value == self.push_logic:
-            return True
-        else:
-            return False
+    # lock
+    lock_p = lock.acquire(1, -1) #wait forever
+    if not lock_p:
+        print("Error:task can not get the lock.")
+    else:
+        que.append(value)
+        lock.release()
+    # unlock
+    return
 
+def recv_que(lock, que):
+    if que is None:
+        print("Error:que is None.")
+        return
 
-    def read_poll(self):
-        logic = self.read()
+    val = None
 
-        # 短押し
-        self.store.append(logic)
-        if len(self.store) <= len(TACT_JUDGE_PRESS):
-            return False, None
-
-        self.store.pop(0)
-        if TACT_JUDGE_PRESS == self.store:
-            return True, "pressed"
-
-        if TACT_JUDGE_RELEASE == self.store:
-            if self.long_evt:
-                self.long_evt = False
-                return False, None
-            return True, "relesed"
-
-        # 長押し
-        self.long_store.append(logic)
-        if len(self.long_store) <= len(TACT_JUDGE_LONG):
-            return False, None
-        self.long_store.pop(0)
-        if TACT_JUDGE_LONG == self.long_store:
-            self.long_evt = True
-            return True, "long"
-
-        return False, None
-
-
-try:
-    from usocket import socket, AF_INET, SOCK_DGRAM
-except:
-    from socket import socket, AF_INET, SOCK_DGRAM
-
-try:
-    import ujson as json
-except:
-    import json
-
-
-HOST = ''
-PORT = 5000
-PORT_DST_CTL = 5001
-PORT_DST_DSP = 5002
-PORT_DST_HTTPC = 5003
-ADDR = '127.0.0.1'
-
-class CommSnd:
-
-    def __init__(self, addr, port):
-        self.addr = addr
-        self.port = port
-        self.s = socket(AF_INET, SOCK_DGRAM)
-
-
-    def sendto_dict(self, d):
-        # text = json.dumps(d)
-        # self.s.sendto(text.encode(), (self.addr, self.port))
-        self.s.sendto(json.dumps(d).encode(), (self.addr, self.port))
-
-
-    def close(self):
-        self.s.close()
-
-
-
+    # lock
+    lock_p = lock.acquire(1, -1) #wait forever
+    if not lock_p:
+        print("Error:task can not get the lock.")
+    else:
+        if len(que) > 0:
+            val = que[0]
+            del que[0]
+        lock.release()
+    # unlock
+    return val

@@ -1,4 +1,4 @@
-from util import TackSwitch
+from sw import TackSwitch
 import time
 import sys
 

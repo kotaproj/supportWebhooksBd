@@ -1,32 +1,38 @@
 import _thread
-from usocket import socket, AF_INET, SOCK_DGRAM
-import ujson as json
 import machine
+import time
 
 import ssd1306
 
+from systems import SystemsData
 from settings import SettingsFile
-from util import CommSnd
-from util import HOST
-from util import ADDR
-from util import PORT_DST_DSP
+from util import *
 
-RCV_BUF_SIZE = 128
+# Defines
 PIN_SCL = 22
 PIN_SDA = 21
 
 TIMER_ID_DSP = 0
+oledctl_inited = False
 
-class DspProc():
-    
-    def __init__(self, mode):
-        i2c = machine.I2C(scl=machine.Pin(PIN_SCL), sda=machine.Pin(PIN_SDA))
-        self._oled = ssd1306.SSD1306_I2C(128, 64, i2c)
-        self._tmr = machine.Timer(TIMER_ID_DSP)
-        self._cs_dsp = CommSnd(ADDR, PORT_DST_DSP)
-        self._settings_file = SettingsFile()
-        self.dsp_pwr_on(mode)
+
+class OledCtl:
+    _instance = None
+
+    def __init__(self):
+        print("OledCtl - init")
+        global oledctl_inited
+        if False == oledctl_inited:
+            i2c = machine.I2C(scl=machine.Pin(PIN_SCL), sda=machine.Pin(PIN_SDA))
+            self._oled = ssd1306.SSD1306_I2C(128, 64, i2c)
+            oledctl_inited = True
         return
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+
+        return cls._instance
 
 
     def dsp_clear(self):
@@ -34,11 +40,9 @@ class DspProc():
         self._oled.show()
         return
 
-
-    def dsp_pwr_on(self, mode):
-        print("dsp:_dsp_pwr_on - run")
+    def dsp_power(self, mode):
+        print("dsp:_dsp_power - run")
         if mode == "server":
-            from systems import SystemsData
             systems_data = SystemsData()
             self._oled.fill(0)
             self._oled.text('Web Server Mode', 0, 0)
@@ -47,128 +51,117 @@ class DspProc():
             self._oled.text('Please Access', 0, 30)
             self._oled.text('http://', 0, 40)
             self._oled.text(systems_data.get_system_AP_IP(), 0, 50)
-            # self._oled.text('OLED display', 0, 30)
-            self._oled.show()         
-        else:
+            self._oled.show()
+        elif mode == "client":
             self._oled.fill(0)
             self._oled.text('Booting...', 0, 0)
             self._oled.text('Client Mode', 0, 10)
-            self._oled.show()         
-
-        return
-
-
-    def dsp_pwr_done(self):
-        print("dsp:dsp_pwr_done - run")
-        self.dsp_clear()
-        return
-
-
-    def _start_timer(self, type, peri):
-        print("dsp:_start_timer - run", peri)
-        if type == "clear":
-            self._tmr.init(period=int(peri), mode=machine.Timer.ONE_SHOT, callback=self._set_event_clear)
-        return
-
-
-    def _stop_timer(self):
-        print("dsp:_stop_timer - run")
-        self._tmr.deinit()
-        return
-
-
-    def _set_event_clear(self, t):
-        print("dsp:_set_event_clear - run")
-        self._cs_dsp.sendto_dict({'cmd': "dsp", 'type':'clear'})
-        return
-
-
-    def _act_cmd(self, d):
-        print('dsp:_act_cmd - run')
-
-        if False == ('cmd' in d) or False == ('type' in d):
-            return False
-
-        if 'dsp' in d['cmd']:
-            self._act_cmd_dsp(d['type'])
-
-        if 're' == d['type']:
-            self._act_cmd_dsp_re(d['type'], d['pos'])
-
-        if True == ('tmr' in d):
-            self._start_timer(type="clear", peri=d['tmr'])
-            # self._start_timer("clear", d['tmr'])
-            # self._start_timer("clear", "3000")
-
-        print('dsp:_act_cmd - over')
-        return True
-
-
-    def _act_cmd_dsp(self, code):
-
-        parse_code = {
-            'no1' : "btn1_evt",
-            'no2' : "btn2_evt",
-            'no3' : "btn3_evt",
-            'no4' : "btn4_evt",
-            'no5' : "btn5_evt",
-            'no6' : "btn6_evt",
-            'no7' : "btn7_evt",
-            'no8' : "btn8_evt",
-            'no9' : "btn9_evt",
-            'no10': "btn10_evt",
-        }
-
-        for key in parse_code.keys():
-            if key in code:
-                self._oled.fill(0)
-                self._oled.text('<IFTTT Request>', 0, 0)
-                self._oled.text(('->' +  str(key)), 0, 10)
-                if "sending" in code:
-                    self._oled.text('Sending...', 0, 20)
-                if "sended" in code:
-                    self._oled.text('Sended', 0, 20)
-                self._oled.text('[MicroPython]', 0, 30)
-                self._oled.show()
-                break
-
-        if 'clear' in code:
-            print("dsp:_act_cmd_dsp - clear")
+            self._oled.show()
+        elif mode == "done":
+            print("dsp:dsp_pwr_done - run")
             self._oled.fill(0)
             self._oled.show()
-
+        else:
+            print("dsp:dsp_pwr - error:", mode)
         return
 
 
-    def _act_cmd_dsp_re(self, code, pos):
+    def dsp_ifttt(self, evt_id, sts):
+        print("dsp:dsp_ifttt - run")
         self._oled.fill(0)
-        self._oled.text('<Rotary Enc>', 0, 0)
-        self._oled.text(' position', 0, 10)
-        self._oled.text(('->' +  pos), 0, 20)
+        self._oled.text('<IFTTT Request>', 0, 0)
+        self._oled.text(('->' +  evt_id), 0, 10)
+        self._oled.text(sts, 0, 20)
+        self._oled.text('[MicroPython]', 0, 30)
         self._oled.show()
         return
 
 
+class DspProc():
+    
+    def __init__(self, lock=None, snd_que=None, rcv_que=None):
+
+        # init
+        print("dsp:__init__ - run")
+        self._oled_ctl = OledCtl()
+        self._tmr = machine.Timer(TIMER_ID_DSP)
+        self._lock = lock
+        self._snd_que = snd_que
+        self._rcv_que = rcv_que
+        self._clear_flg = False
+        return
+
     def _proc_dsp(self):
-        count = 0
-        s = socket(AF_INET, SOCK_DGRAM)
-        s.bind((HOST, PORT_DST_DSP))
+        print("dsp:_proc_dsp - run")
+
+        def start_timer(type, peri):
+            print("dsp:start_timer - run", peri)
+            if type == "clear":
+                self._tmr.init(period=int(peri), mode=machine.Timer.ONE_SHOT, callback=set_event_clear)
+            return
+
+        def stop_timer():
+            print("dsp:stop_timer - run")
+            self._tmr.deinit()
+            self._clear_flg = False
+            return
+
+        def set_event_clear(t):
+            print("dsp:_set_event_clear - run")
+            self._clear_flg = True
+            return
+
+        def act_dsp(msg):
+            print('dsp:act_dsp - run')
+            d = conv_msg2dict(msg)
+            if False == ('cmd' in d) or False == ('type' in d):
+                return False
+
+            # {cmd:dsp,type:ifttt,how:"evt_id",tmr:3000}
+            # {cmd:dsp,type:power,how:server,tmr:3000}
+            # {cmd:dsp,type:power,how:client,tmr:3000}
+            # {cmd:dsp,type:power,how:done,tmr:3000}
+            # {cmd:dsp,type:clear,how: ,tmr:0}
+            typ = d['type'] if ('type' in d) else "dummy"
+            how = d['how'] if ('how' in d) else "dummy"
+            tm_count = int(d['tmr']) if ('tmr' in d) else -1
+
+            if "power" == typ:
+                self._oled_ctl.dsp_power(how)
+            elif "clear" == typ:
+                self._oled_ctl.dsp_clear()
+            elif "ifttt" == typ:
+                sts = d['sts'] if ('sts' in d) else "dummy"
+                self._oled_ctl.dsp_ifttt(how, sts)
+            else:
+                return False
+
+            # timer
+            if tm_count > 0:
+                start_timer(type="clear", peri=tm_count)
+
+
+            print('dsp:act_dsp - over')
+            return True
 
         while True:
-            # 受信
-            count += 1
-            msg, address = s.recvfrom(RCV_BUF_SIZE)
+            # recvive_que
+            msg = recv_que(self._lock, self._rcv_que)
+            if msg is None:
+                # print("IndexError")
+                time.sleep_ms(50)
+                # clear
+                if self._clear_flg:
+                    self._oled_ctl.dsp_clear()
+                    self._clear_flg = False
+                continue
 
-            # タイマーの強制停止
-            self._stop_timer()
+            # stop : timer
+            stop_timer()
+            print("proc_dsp:msg - ", msg)
+            act_dsp(msg)
 
-            d = json.loads(msg.decode())
-            print(d)
-            print("while - ", count)
-            
-            self._act_cmd(d)
-
-        s.close()
+        return
 
 
     def run(self):
@@ -178,3 +171,49 @@ class DspProc():
     def debug_clear(self):
         self._oled.fill(0)
         self._oled.show()
+
+
+
+
+def main():
+
+    lock = _thread.allocate_lock()
+
+    que_dsp2pre = []
+    que_pre2dsp = []
+    dsp_proc = DspProc(lock, snd_q=que_dsp2pre, rcv_q=que_pre2dsp)
+    dsp_proc.run()
+    
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:server,tmr:3000"))
+
+    
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sending...,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id0,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id1,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id2,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id3,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id4,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id5,sts:sended.,tmr:3000"))
+    time.sleep_ms(20_000)
+    time.sleep_ms(1_000)
+    time.sleep_ms(1_000)
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sended.,tmr:3000"))
+    time.sleep_ms(3_000)
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:server,tmr:3000"))
+    # time.sleep_ms(3_000)
+    # send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:client,tmr:3000"))
+    # time.sleep_ms(3_000)
+    # send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:done,tmr:3000"))
+    time.sleep_ms(20_000)
+    # print("debug - done!")
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id10,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id11,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id12,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id13,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id14,sts:sended.,tmr:3000"))
+    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id15,sts:sended.,tmr:3000"))
+    time.sleep_ms(1_000)
+    return
+
+if __name__ == "__main__":
+    main()

@@ -4,8 +4,6 @@ import time
 
 import ssd1306
 
-from systems import SystemsData
-from settings import SettingsFile
 from util import *
 
 # Defines
@@ -42,17 +40,7 @@ class OledCtl:
 
     def dsp_power(self, mode):
         print("dsp:_dsp_power - run")
-        if mode == "server":
-            systems_data = SystemsData()
-            self._oled.fill(0)
-            self._oled.text('Web Server Mode', 0, 0)
-            self._oled.text('SSID:' + systems_data.get_system_AP_SSID(), 0, 10)
-            self._oled.text('PASS:' + systems_data.get_system_AP_PASSWORD(), 0, 20)
-            self._oled.text('Please Access', 0, 30)
-            self._oled.text('http://', 0, 40)
-            self._oled.text(systems_data.get_system_AP_IP(), 0, 50)
-            self._oled.show()
-        elif mode == "client":
+        if mode == "client":
             self._oled.fill(0)
             self._oled.text('Booting...', 0, 0)
             self._oled.text('Client Mode', 0, 10)
@@ -168,12 +156,6 @@ class DspProc():
         _thread.start_new_thread(self._proc_dsp, ())
 
 
-    def debug_clear(self):
-        self._oled.fill(0)
-        self._oled.show()
-
-
-
 
 def main():
 
@@ -185,34 +167,11 @@ def main():
     dsp_proc.run()
     
     send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:server,tmr:3000"))
-
-    
+    time.sleep_ms(1_000)
     send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sending...,tmr:3000"))
+    time.sleep_ms(1_000)
     send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id0,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id1,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id2,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id3,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id4,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id5,sts:sended.,tmr:3000"))
-    time.sleep_ms(20_000)
-    time.sleep_ms(1_000)
-    time.sleep_ms(1_000)
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id,sts:sended.,tmr:3000"))
-    time.sleep_ms(3_000)
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:server,tmr:3000"))
-    # time.sleep_ms(3_000)
-    # send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:client,tmr:3000"))
-    # time.sleep_ms(3_000)
-    # send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:power,how:done,tmr:3000"))
-    time.sleep_ms(20_000)
-    # print("debug - done!")
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id10,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id11,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id12,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id13,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id14,sts:sended.,tmr:3000"))
-    send_que(lock, que_pre2dsp, ("dst:dsp,src:pre,cmd:dsp,type:ifttt,how:evt_id15,sts:sended.,tmr:3000"))
-    time.sleep_ms(1_000)
+    time.sleep_ms(10_000)
     return
 
 if __name__ == "__main__":

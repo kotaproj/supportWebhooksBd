@@ -1,2 +1,4 @@
 /.vscode
 /esp_spiram/ssd1306.py
+/esp_async/ssd1306.py
+/esp_zenn/ssd1306.py
